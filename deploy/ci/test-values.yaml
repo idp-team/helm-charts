@@ -1,5 +1,12 @@
 image:
-  repository: vikaspogu/node-ci-test
+  repository: ghcr.io/mendhak/http-https-echo
   pullPolicy: IfNotPresent
-  tag: "0.0.1"
-
+  tag: "31"
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
