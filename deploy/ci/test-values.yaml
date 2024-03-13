@@ -3,4 +3,5 @@ image:
   pullPolicy: IfNotPresent
   tag: "0.0.1"
 serviceAccount:
+  create: false
   name: "pipeline"
