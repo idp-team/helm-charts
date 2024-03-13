@@ -2,6 +2,4 @@ image:
   repository: vikaspogu/node-ci-test
   pullPolicy: IfNotPresent
   tag: "0.0.1"
-serviceAccount:
-  create: false
-  name: "pipeline"
+
