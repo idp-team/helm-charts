@@ -1,0 +1,3 @@
+validate-maintainers: false
+chart-yaml-schema: chart-schema.yaml
+lint-conf: lint-conf.yaml
