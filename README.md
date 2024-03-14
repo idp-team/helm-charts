@@ -1,4 +1,4 @@
-# README.md for helm-charts
+# helm-charts
 
 ## Notes
 
