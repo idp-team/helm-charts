@@ -1,0 +1,25 @@
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: EventListener
+metadata:
+  name: el-{{ .Values.app.name }}
+spec:
+  serviceAccountName: pipeline
+  triggers:
+    - name: github-main-listener
+      interceptors:
+        - ref:
+            name: "github"
+          params:
+            - name: "eventTypes"
+              value: ["push"]
+        - ref:
+            name: "cel"
+          params:
+            - name: "filter"
+              value: body.ref == 'refs/heads/main'
+      bindings:
+        - ref: build-binding
+      template:
+        ref: run-build-{{ .Values.app.name }}
+
