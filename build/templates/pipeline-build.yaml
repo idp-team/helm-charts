@@ -68,17 +68,23 @@ spec:
       workspaces:
         - name: source
           workspace: source-folder
-        - name: artifactoryconfig 
-          workspace: artifactory-config 
-    
-    - name: open-pr
-      taskRef:
-        kind: Task
-        name: github-open-pr
-      runAfter:
-        - build
-      params:
-        #- name: imageDigest
-          #value: $(tasks.build-and-push-image.results.IMAGE-DIGEST)
+        - name: dockerconfig 
+          workspace: docker-config 
+     
+      # - name: build-and-push-image
+      # taskRef:
+      #   kind: Task
+      #   name: docker-build
+      # runAfter:
+      #   - package
+      # params:
+      #   - name: image
+      #     value: $(params.output-image)
+      # workspaces:
+      #   - name: source
+      #     workspace: source-folder   
+    # For the next task  
+      #- name: imageDigest
+        #value: $(tasks.build-and-push-image.results.IMAGE-DIGEST)
           
   

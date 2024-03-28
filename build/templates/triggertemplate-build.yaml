@@ -44,5 +44,8 @@ spec:
                     storage: 1G
           - name: maven-settings 
             emptyDir: {} 
-          - name: artifactory-config 
+          - name: docker-config 
+            secret:
+              secretName: docker-credentials
+
           
