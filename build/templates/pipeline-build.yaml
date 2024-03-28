@@ -26,7 +26,7 @@ spec:
   workspaces:
     - name: source-folder
     - name: maven-settings
-    - name: docker-config
+    - name: artifactory-config
   tasks:
     - name: git-clone
       taskRef:
@@ -56,7 +56,7 @@ spec:
           workspace: source-folder
         - name: maven-settings
           workspace: maven-settings
-    - name: build
+    - name: build-and-push-image
       taskRef:
         kind: Task
         name: kaniko
@@ -68,8 +68,9 @@ spec:
       workspaces:
         - name: source
           workspace: source-folder
-        - name: dockerconfig
-          workspace: docker-config
+        - name: artifactoryconfig 
+          workspace: artifactory-config 
+    
     - name: open-pr
       taskRef:
         kind: Task
@@ -77,5 +78,7 @@ spec:
       runAfter:
         - build
       params:
-        #COMPLETE
+        #- name: imageDigest
+          #value: $(tasks.build-and-push-image.results.IMAGE-DIGEST)
+          
   

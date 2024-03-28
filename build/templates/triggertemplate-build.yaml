@@ -41,8 +41,8 @@ spec:
                   - ReadWriteOnce
                 resources:
                   requests:
-                    storage: 1Gi
+                    storage: 1G
           - name: maven-settings 
             emptyDir: {} 
-          - name: docker-config
-            emptyDir: {}
+          - name: artifactory-config 
+          
