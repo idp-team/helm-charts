@@ -23,7 +23,7 @@ spec:
   workspaces:
     - name: source-folder
     - name: maven-settings
-    - name: docker-config
+    - name: docker-credentials
   tasks:
     - name: git-clone
       taskRef:
@@ -66,7 +66,7 @@ spec:
         - name: source
           workspace: source-folder
         - name: dockerconfig 
-          workspace: docker-config 
+          workspace: docker-credentials 
      
       # - name: build-and-push-image
       # taskRef:

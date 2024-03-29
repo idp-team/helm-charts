@@ -5,7 +5,7 @@ app:
 
 git:
   branch: master
-  repo: my-quarkus-app
+  repo: https://gitlab-gitlab.apps.cluster-q7zfx.sandbox2589.opentlc.com/development/my-quarkus-app
   org: ''
   name: ''
   host: ''
