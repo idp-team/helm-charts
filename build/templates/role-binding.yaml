@@ -5,7 +5,7 @@ metadata:
 subjects:
   - kind: ServiceAccount
     name: image-pusher
-    namespace: tekton-build-${{ .Values.app.name }}-pipeline
+    namespace: tekton-build-{{ .Values.app.name }}-pipeline
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
