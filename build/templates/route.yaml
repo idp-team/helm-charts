@@ -3,7 +3,7 @@ kind: Route
 apiVersion: route.openshift.io/v1
 metadata:
   name: webhook-{{ .Values.app.name }}-el
-  namespace: tekton-build-${{values.component_id}}-pipeline
+  namespace: tekton-build-${{ .Values.app.name }}-pipeline
   labels:
     app.kubernetes.io/managed-by: EventListener
     app.kubernetes.io/part-of: Triggers
