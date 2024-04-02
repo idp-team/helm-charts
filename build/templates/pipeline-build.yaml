@@ -9,17 +9,18 @@ metadata:
 spec:
   params:
     - name: source-repo
-      description: source repo that contains the application code
       type: string
+      description: source repo that contains the application code
       default: https://github.com/idp-team/my-quarkus-app
     - name: source-branch
+      type: string
       description: source branch to build from
       default: main
-      type: string
     - name: output-image
-      description: reference of the image that will get created
-      default: quay.io/alexandracasas/{{ .Values.app.name }}
       type: string
+      description: reference of the image that will get created
+      default: quay.io/alexandracasas/{{ .Values.app.name }}:latest
+     
   workspaces:
     - name: source-folder
     - name: maven-settings
@@ -44,10 +45,10 @@ spec:
       runAfter:
         - git-clone
       params:
-        - name: GOALS
+        - name: GOALS   # represents a maven phase (i.e. a stage in the maven build lifecycle)
           value:
-            - test 
-            - package 
+            - test      # run unit tests
+            - package   # package compiled source code into a distributable format (jar, war,...)
       workspaces:
         - name: source
           workspace: source-folder
@@ -68,23 +69,7 @@ spec:
       workspaces:
         - name: source
           workspace: source-folder
-        - name: dockerconfig 
+        - name: dockerconfig # access container registry
           workspace: docker-config
-     
-      # - name: build-and-push-image
-      # taskRef:
-      #   kind: Task
-      #   name: docker-build
-      # runAfter:
-      #   - package
-      # params:
-      #   - name: image
-      #     value: $(params.output-image)
-      # workspaces:
-      #   - name: source
-      #     workspace: source-folder   
-    # For the next task  
-      #- name: imageDigest
-        #value: $(tasks.build-and-push-image.results.IMAGE-DIGEST)
           
   
