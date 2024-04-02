@@ -12,7 +12,7 @@ spec:
       description: The repo url
     - name: output-image
       description: reference of the image that will get created
-      default: {{ .Values.app.name }}
+      default: quay.io/alexandracasas/{{ .Values.app.name }}
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
@@ -46,6 +46,6 @@ spec:
             emptyDir: {} 
           - name: docker-config 
             secret:
-              secretName: docker-credentials
+              secretName: alexandracasas-pull-secret
 
           

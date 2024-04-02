@@ -4,8 +4,8 @@ app:
   cluster: https://console-openshift-console.apps.cluster-q7zfx.sandbox2589.opentlc.com/
 
 git:
-  branch: master
-  repo: https://gitlab-gitlab.apps.cluster-q7zfx.sandbox2589.opentlc.com/development/my-quarkus-app
+  branch: main
+  repo: https://github.com/idp-team/my-quarkus-app
   org: ''
   name: ''
   host: ''
