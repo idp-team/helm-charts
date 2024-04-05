@@ -13,6 +13,12 @@ spec:
     - name: output-image
       description: reference of the image that will get created
       default: ''
+    - name: namespace
+      description: where the tekton project is installed
+      default: {{ .Values.app.namespace }}
+    # - name: cosignkey
+    #   description: cosign key to sign and verify signatures
+    #   default: ''
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
@@ -30,6 +36,10 @@ spec:
             value: $(tt.params.output-image)
           - name: component-id
             value: {{ .Values.app.name }}
+          - name: namespace
+            value: $(tt.params.namespace)
+          # - name: cosignkey
+          #   value: $(tt.params.cosignkey)
         pipelineRef:
           name: build-pipeline-{{ .Values.app.name }}
         serviceAccountName: pipeline
@@ -47,5 +57,6 @@ spec:
           - name: docker-config 
             secret:
               secretName: acasas-docker-creds
+         
 
           

@@ -20,11 +20,20 @@ spec:
       type: string
       description: reference of the image that will get created
       default: quay.io/alexandracasas/{{ .Values.app.name }}:latest
+    - name: namespace
+      type: string
+      description: where the tekton project is installed
+      default: {{ .Values.app.namespace }}
+    # - name: cosignkey
+    #   type: string
+    #   description: cosign key to sign and verify signatures
+    #   default: ''
      
   workspaces:
     - name: source-folder
     - name: maven-settings
     - name: docker-config
+
   tasks:
     - name: git-clone
       taskRef:
@@ -56,7 +65,7 @@ spec:
           workspace: maven-settings
     - name: build-and-push-image
       taskRef:
-        kind: ClusterTask
+        kind: Task
         name: buildah
       runAfter:
         - package
@@ -69,7 +78,24 @@ spec:
       workspaces:
         - name: source
           workspace: source-folder
-        - name: dockerconfig # access container registry
+        - name: dockerconfig 
           workspace: docker-config
+    - name: sign-image
+      taskRef:
+        kind: Task
+        name: cosign
+      runAfter:
+        - build-and-push-image
+      params:
+        - name: image
+          value: $(params.output-image)
+        - name: namespace
+          value: $(params.namespace)
+        - name: cosignkey
+          value: cosign
+      workspaces:
+        - name: source
+          workspace: source-folder
+      
           
   
