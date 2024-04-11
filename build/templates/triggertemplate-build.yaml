@@ -9,16 +9,32 @@ spec:
       description: The git revision
       default: {{ .Values.git.branch }}
     - name: git-repo-url
-      description: The repo url
+      description: The application's repo url 
     - name: output-image
       description: reference of the image that will get created
+      default: ''
+    - name: output-image-tag
+      description: tag for the image that will get created
       default: ''
     - name: namespace
       description: where the tekton project is installed
       default: {{ .Values.app.namespace }}
-    # - name: cosignkey
-    #   description: cosign key to sign and verify signatures
-    #   default: ''
+    - name: manifest-repo-url
+      description: the argo application manifest repo url
+      default: ''
+    - name: manifest-repo-revision
+      description: the branch where changes are implemented
+      default: ''
+    - name: manifest-repo-base
+      description: the branch where we want the changes pulled into
+      default: ''
+    - name: app-name
+      description: name of the application
+      default: ''
+    - name: app-env
+      description: environment of the app to build
+      default: ''
+
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
@@ -34,29 +50,41 @@ spec:
             value: $(tt.params.git-revision)
           - name: output-image
             value: $(tt.params.output-image)
-          - name: component-id
-            value: {{ .Values.app.name }}
+          - name: output-image-tag
+            value: $(tt.params.output-image-tag)
           - name: namespace
             value: $(tt.params.namespace)
-          # - name: cosignkey
-          #   value: $(tt.params.cosignkey)
+          - name: output-repo
+            value: $(tt.params.manifest-repo-url)
+          - name: output-branch
+            value: $(tt.params.manifest-repo-revision)
+          - name: output-base-branch
+            value: $(tt.params.manifest-repo-base)
+          - name: app-name
+            value: $(tt.params.app-name)
+          - name: app-env
+            value: $(tt.params.app-env)
+          
         pipelineRef:
           name: build-pipeline-{{ .Values.app.name }}
         serviceAccountName: pipeline
         workspaces:
-          - name: source-folder
-            volumeClaimTemplate:
-              spec:
-                accessModes:
-                  - ReadWriteOnce
-                resources:
-                  requests:
-                    storage: 1G
+          - name: source-shared-data
+            persistentVolumeClaim:
+              claimName: source-shared-data
           - name: maven-settings 
             emptyDir: {} 
           - name: docker-config 
             secret:
               secretName: acasas-docker-creds
+          - name: output-shared-data
+            persistentVolumeClaim:
+              claimName: output-shared-data
+          - name: git-config
+            secret:
+              secretName: acasas-git-creds
+          
+          
          
 
           

@@ -11,31 +11,51 @@ spec:
     - name: source-repo
       type: string
       description: source repo that contains the application code
-      default: https://github.com/idp-team/my-quarkus-app
+      default: https://github.com/idp-team/my-quarkus-app.git
     - name: source-branch
       type: string
-      description: source branch to build from
+      description: branch to build from in the source repo
       default: main
     - name: output-image
       type: string
       description: reference of the image that will get created
-      default: quay.io/alexandracasas/{{ .Values.app.name }}:latest
+      default: quay.io/alexandracasas/{{ .Values.app.name }}
+    - name: output-image-tag
+      type: string
+      description: reference of the image that will get created
     - name: namespace
       type: string
       description: where the tekton project is installed
       default: {{ .Values.app.namespace }}
-    # - name: cosignkey
-    #   type: string
-    #   description: cosign key to sign and verify signatures
-    #   default: ''
-     
+    - name: output-repo
+      type: string
+      description: tenant gitops repo that contains the application's values file
+      default: https://github.com/idp-team/tenant-gitops-repo.git
+    - name: output-branch
+      type: string
+      description: name of branch to create in the tenant gitops repo
+      default: update-image-tag
+    - name: output-base-branch
+      type: string
+      description: name of base branch in the tenant gitops repo
+      default: main
+    - name: app-name
+      type: string
+      description: name of the application
+    - name: app-env
+      type: string
+      description: environment of the app to build
+
+   
   workspaces:
-    - name: source-folder
+    - name: source-shared-data
     - name: maven-settings
     - name: docker-config
+    - name: output-shared-data
+    - name: git-config
 
   tasks:
-    - name: git-clone
+    - name: git-clone-source    # fetch the app's repository
       taskRef:
         kind: ClusterTask
         name: git-clone
@@ -46,41 +66,46 @@ spec:
           value: $(params.source-branch)
       workspaces:
         - name: output
-          workspace: source-folder
-    - name: package
+          workspace: source-shared-data
+    
+    - name: package             # run unit tests and compile the app's source code
       taskRef:
         kind: ClusterTask
         name: maven
       runAfter:
-        - git-clone
+        - git-clone-source
       params:
-        - name: GOALS   # represents a maven phase (i.e. a stage in the maven build lifecycle)
+        - name: GOALS  
           value:
-            - test      # run unit tests
-            - package   # package compiled source code into a distributable format (jar, war,...)
+            - test      
+            - package   
       workspaces:
         - name: source
-          workspace: source-folder
+          workspace: source-shared-data
         - name: maven-settings
           workspace: maven-settings
-    - name: build-and-push-image
+    
+    - name: build-and-push-image  # build the (compiled) source code and push the image to registry
       taskRef:
         kind: Task
-        name: buildah
+        name: buildah-update
       runAfter:
         - package
       params:
         - name: IMAGE
           value: $(params.output-image)
+        - name: TAG
+          value: $(params.output-image-tag)
         - name: EXTRA_ARGS
           value:
             - --skip-tls-verify
       workspaces:
         - name: source
-          workspace: source-folder
+          workspace: source-shared-data
         - name: dockerconfig 
           workspace: docker-config
-    - name: sign-image
+    
+    - name: sign-image            # sign the container image
       taskRef:
         kind: Task
         name: cosign
@@ -89,13 +114,107 @@ spec:
       params:
         - name: image
           value: $(params.output-image)
+        - name: tag
+          value: $(params.output-image-tag)
         - name: namespace
           value: $(params.namespace)
         - name: cosignkey
           value: cosign
       workspaces:
         - name: source
-          workspace: source-folder
-      
-          
-  
+          workspace: source-shared-data
+    
+    - name: git-clone-output      # fetch the tenant gitops repository
+      taskRef:
+        kind: ClusterTask
+        name: git-clone
+      runAfter:
+        - sign-image
+      params:
+        - name: url
+          value: $(params.output-repo)
+      workspaces:
+        - name: output
+          workspace: output-shared-data
+
+    - name: create-new-branch     # create a new branch in the tenant gitops repository
+      taskRef:
+        kind: ClusterTask
+        name: git-cli
+      runAfter:
+        - git-clone-output
+      params:
+        - name: GIT_SCRIPT
+          value: |
+            git config --global --add safe.directory /workspace/source
+            git remote set-url origin $(params.output-repo)
+            git checkout -b $(params.output-branch)
+            git push --set-upstream origin $(params.output-branch)
+      workspaces:
+        - name: source
+          workspace: output-shared-data
+        - name: basic-auth
+          workspace: git-config
+    
+    - name: update-tag            # modify the image tag in the env values file
+      taskRef:
+        kind: Task
+        name: edit-file
+      runAfter:
+        - create-new-branch
+      params:
+        - name: app_name
+          value: $(params.app-name)
+        - name: app_env
+          value: $(params.app-env)
+        - name: image_tag 
+          value: $(params.output-image-tag)
+        - name: sha_hash
+          value: $(tasks.build-and-push-image.results.IMAGE_DIGEST)
+      workspaces:
+        - name: output
+          workspace: output-shared-data
+
+    - name: push-latest-change     # create a new branch in the tenant gitops repository
+      taskRef:
+        kind: ClusterTask
+        name: git-cli
+      runAfter:
+        - update-tag
+      params:
+        - name: GIT_SCRIPT
+          value: |
+            git config --global --add safe.directory /workspace/source
+            git config --global user.email "acasas@redhat.com"
+            git config --global user.name "Alexandra Casas"
+            git pull
+            git status
+            git add $(params.app-name)/$(params.app-env).yaml
+            git commit -m "Update image tag in $(params.app-env)"
+            git push
+
+      workspaces:
+        - name: source
+          workspace: output-shared-data
+        - name: basic-auth
+          workspace: git-config
+    
+    - name: create-pull-request
+      taskRef:
+        kind: Task
+        name: github-open-pr
+      runAfter:
+        - push-latest-change
+      params:
+        - name: REPO_FULL_NAME
+          value: idp-team/tenant-gitops-repo
+        - name: HEAD
+          value: $(params.output-branch)
+        - name: BASE
+          value: $(params.output-base-branch)
+        - name: TITLE
+          value: "Update image tag and SHA hash for $(params.app-name)"
+        - name: BODY
+          value: "Updating the image tag and SHA hash after having built the latest $(params.app-env) changes of the $(params.app-name) application."
+        
+    

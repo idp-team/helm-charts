@@ -15,6 +15,8 @@ spec:
     type: string
   - name: image
     type: string
+  - name: tag
+    type: string
   - name: namespace
     type: string
   results:
@@ -30,19 +32,8 @@ spec:
     script: >
       #!/busybox/env /busybox/sh
 
-      cosign sign --key k8s://$(params.namespace)/$(params.cosignkey) --yes=true $(params.image)
+      IMAGE="$(params.image):$(params.tag)"
 
-      echo "${CMD}"
-        
-      ERR_MSG="Failed to sign $(params.image)"
-        
-      ${CMD} &> result
+      echo $IMAGE
 
-      err=$?
-
-      cat result
-
-      if [[ ${err} -ne 0 ]]; then
-        echo "${ERR_MSG}"
-        exit 1
-      fi
+      cosign sign --key k8s://$(params.namespace)/$(params.cosignkey) --yes=true $IMAGE

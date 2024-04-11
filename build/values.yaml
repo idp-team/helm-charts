@@ -5,7 +5,7 @@ app:
 
 git:
   branch: main
-  repo: https://github.com/idp-team/my-quarkus-app
+  repo: https://github.com/idp-team/my-quarkus-app.git 
   org: ''
   name: ''
   host: ''
