@@ -199,7 +199,7 @@ spec:
         - name: basic-auth
           workspace: git-config
     
-    - name: create-pull-request
+    - name: create-pull-request     # open a pull request in the tenant gitops repository
       taskRef:
         kind: Task
         name: github-open-pr
