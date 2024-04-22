@@ -3,18 +3,11 @@ apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
   name: egress
-  labels:
-    app.kubernetes.io/version: "0.2"
-  annotations:
-    tekton.dev/categories: Git
-    tekton.dev/pipelines.minVersion: "0.12.1"
-    tekton.dev/tags: github
-    tekton.dev/displayName: "open github pull request"
-    tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le"
 spec:
   description: >-
-    This task will open a PR on Github based on several parameters.
-    This could be useful in GitOps repositories for example.
+    This task will take in the path to an existing yaml file in the filesystem,
+    perform some logic to determine an unused IP, and write that to the file(s)
+    provided in the output.
 
   params:
   - name: OUTPUT

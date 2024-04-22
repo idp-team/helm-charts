@@ -1,6 +1,6 @@
 app:
   name: my-quarkus-app
-  namespace: rhdh-test-2
+  namespace: rhdh-test
   cluster: https://console-openshift-console.apps.cluster-q7zfx.sandbox2589.opentlc.com/
 
 git:
