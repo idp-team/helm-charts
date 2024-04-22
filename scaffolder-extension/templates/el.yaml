@@ -1,0 +1,27 @@
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: EventListener
+metadata:
+  name: el-{{ .Values.app.name }}
+spec:
+  serviceAccountName: pipeline
+  triggers:
+    - name: gitlab-main-listener
+      interceptors:
+        - ref:
+            name: "gitlab"
+          params:
+            - name: "eventTypes"
+              value: ["Merge Request Hook"]
+    # - name: github-main-listener
+    #   interceptors:
+    #     - ref:
+    #         name: "github"
+    #       params:
+    #         - name: "eventTypes"
+    #           value: ["pull_request"]
+      bindings:
+        - ref: egress-binding
+      template:
+        ref: run-egress-{{ .Values.app.name }}
+

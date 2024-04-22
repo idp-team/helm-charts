@@ -1,0 +1,50 @@
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  name: run-egress-{{ .Values.app.name }}
+spec:
+  params:
+    - name: target
+      description: The target branch of the pull request
+    - name: git-repo-url
+      description: The application's repo url 
+    - name: description
+      description: The pull request description containing the names of the yaml files to update
+    - name: egress-ip-path
+      description: The path within the repo to the file containing existing IPs
+      default: 'test.yaml'
+
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        name: $(uid)
+        labels:
+          backstage.io/kubernetes-id: {{ .Values.app.name }}
+      spec:
+        params:
+          - name: target
+            value: $(tt.params.target)
+          - name: git-repo-url
+            value: $(tt.params.git-repo-url)
+          - name: description
+            value: $(tt.params.description)
+          - name: egress-ip-path
+            value: $(tt.params.egress-ip-path)
+          
+        pipelineRef:
+          name: egress-pipeline-{{ .Values.app.name }}
+        serviceAccountName: pipeline
+        workspaces:
+          - name: source-shared-data
+            persistentVolumeClaim:
+              claimName: source-shared-data
+          - name: git-config
+            secret:
+              secretName: mhill-git-creds
+          
+          
+         
+
+          

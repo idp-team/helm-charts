@@ -1,0 +1,19 @@
+---
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: egress-binding
+spec:
+  params:
+    - name: git-repo-url
+      value: $(body.project.git_http_url)
+    - name: target
+      value: $(body.object_attributes.source_branch)
+    - name: description
+      value: $(body.object_attributes.description)
+    # - name: git-repo-url
+    #   value: $(body.repository.html_url)
+    # - name: target
+    #   value: $(body.pull_request.head.ref)
+    # - name: description
+    #   value: $(body.pull_request.body)
