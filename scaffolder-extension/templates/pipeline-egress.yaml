@@ -1,0 +1,87 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: egress-pipeline-{{ .Values.app.name }}
+  labels:
+    type: pipeline
+    backstage.io/kubernetes-id: {{ .Values.app.name }}
+spec:
+  params:
+    - name: target
+      type: string
+      description: The target branch of the pull request
+    - name: git-repo-url
+      type: string
+      description: The application's repo url 
+    - name: description
+      type: string
+      description: The pull request description containing the names of the yaml files to update
+    - name: egress-ip-path
+      type: string
+      description: The path within the repo to the file containing existing IPs
+    - name: name
+      type: string
+      description: The name to appear on the commit
+    - name: email
+      type: string
+      description: The email to appear on the commit
+   
+  workspaces:
+    - name: source-shared-data
+    - name: git-config
+
+  tasks:
+    - name: git-clone-source    # fetch the app's repository
+      taskRef:
+        kind: ClusterTask
+        name: git-clone
+      params:
+        - name: url
+          value: $(params.git-repo-url)
+        - name: revision
+          value: $(params.target)
+      workspaces:
+        - name: output
+          workspace: source-shared-data
+
+    - name: egress-assignment    # update branch with egress ip
+      taskRef:
+        kind: Task
+        name: egress
+      runAfter:
+        - git-clone-source
+      params:
+        - name: OUTPUT
+          value: $(params.description)
+        - name: INPUT
+          value: $(params.egress-ip-path)
+      workspaces:
+        - name: output
+          workspace: source-shared-data
+
+    - name: push-latest-change     # push changes to branch
+      taskRef:
+        kind: ClusterTask
+        name: git-cli
+      runAfter:
+        - egress-assignment
+      params:
+        - name: GIT_SCRIPT
+          value: |
+            git config --global --add safe.directory /workspace/source
+            git config --global user.email "$(params.email)"
+            git config --global user.name "$(params.name)"
+            git pull origin $(params.target)
+            git checkout $(params.target)
+            git status
+            git add .
+            git commit -m "Add egress IP"
+            git push origin $(params.target)
+
+      workspaces:
+        - name: source
+          workspace: source-shared-data
+        - name: basic-auth
+          workspace: git-config
+    

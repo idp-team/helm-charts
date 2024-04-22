@@ -1,0 +1,21 @@
+app:
+  name: my-quarkus-app
+  namespace: rhdh-test
+  cluster: https://console-openshift-console.apps.cluster-q7zfx.sandbox2589.opentlc.com/
+
+git:
+  branch: main
+  repo: https://github.com/idp-team/my-quarkus-app.git 
+  org: ''
+  name: ''
+  host: ''
+  token: ''
+  webhookSecret: ''
+
+
+image:
+  registry: ''
+  organization: ''
+  host: ''
+  name: ''
+  tag: ''

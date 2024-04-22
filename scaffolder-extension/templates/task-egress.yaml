@@ -1,0 +1,77 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: egress
+spec:
+  description: >-
+    This task will take in the path to an existing yaml file in the filesystem,
+    perform some logic to determine an unused IP, and write that to the file(s)
+    provided in the output.
+
+  params:
+  - name: OUTPUT
+    description: |
+      The string containing the list of files to update.
+    type: string
+
+  - name: INPUT
+    description: |
+      The yaml file containing the list of existing egress ips
+    type: string
+
+  workspaces:
+  - name: output
+    description: workspace containing the git repo
+
+  steps:
+    - name: process-egress-ip
+      image: registry.access.redhat.com/ubi8/python-38:1-34.1599745032
+      workingDir: $(workspaces.output.path)
+      script: |
+        #!/usr/libexec/platform-python
+
+        import os
+        import re
+
+        def process_file(input_path, output_info):
+            try:
+                # Read the input file
+                with open(input_path, 'r') as file:
+                    lines = file.readlines()
+
+                # Perform some logic: count the number of lines
+                line_count = len(lines)
+
+                # Extract the output filename from the output_info string
+                match = re.search(r"output_filename='(.*?)'", output_info)
+                if match:
+                    output_filename = match.group(1)
+                else:
+                    raise ValueError("Output filename not specified properly in the string.")
+
+                # Full path for the output file
+                output_path = os.path.join(os.path.dirname(input_path), output_filename)
+
+                # Write the result to the output file
+                with open(output_path, 'w') as file:
+                    file.write(f'Number of lines: {line_count}\n')
+
+            except FileNotFoundError:
+                print(f"The file {input_path} does not exist.")
+            except Exception as e:
+                print(f"An error occurred: {e}")
+
+        # Path to the directory containing the files
+        directory_path = '.'
+
+        # Full path for the input file
+        input_file_path = os.path.join(directory_path, "$(params.INPUT)")
+
+        # Information including the output filename
+        output_info = """
+          $(params.OUTPUT)
+        """
+
+        # Process the file
+        process_file(input_file_path, output_info)
