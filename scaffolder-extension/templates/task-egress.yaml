@@ -3,6 +3,7 @@ apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
   name: egress
+  namespace: {{ .Values.app.namespace }}
 spec:
   description: >-
     This task will take in the path to an existing yaml file in the filesystem,

@@ -3,6 +3,7 @@ apiVersion: triggers.tekton.dev/v1beta1
 kind: TriggerBinding
 metadata:
   name: egress-binding
+  namespace: {{ .Values.app.namespace }}
 spec:
   params:
     - name: git-repo-url

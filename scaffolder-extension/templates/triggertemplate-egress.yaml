@@ -3,6 +3,7 @@ apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerTemplate
 metadata:
   name: run-egress-{{ .Values.app.name }}
+  namespace: {{ .Values.app.namespace }}
 spec:
   params:
     - name: target
