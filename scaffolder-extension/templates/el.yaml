@@ -2,7 +2,7 @@
 apiVersion: triggers.tekton.dev/v1alpha1
 kind: EventListener
 metadata:
-  name: el-{{ .Values.app.name }}
+  name: {{ .Values.app.name }}
 spec:
   serviceAccountName: pipeline
   triggers:
@@ -13,6 +13,11 @@ spec:
           params:
             - name: "eventTypes"
               value: ["Merge Request Hook"]
+        - ref:
+            name: "cel"
+          params:
+            - name: "filter"
+              value: body.object_attributes.action == 'open'
     # - name: github-main-listener
     #   interceptors:
     #     - ref:

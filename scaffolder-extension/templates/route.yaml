@@ -11,7 +11,7 @@ metadata:
 spec:
   to:
     kind: Service
-    name: el-{{ .Values.app.name }}-el
+    name: el-{{ .Values.app.name }}
     weight: 100
   port:
     targetPort: http-listener

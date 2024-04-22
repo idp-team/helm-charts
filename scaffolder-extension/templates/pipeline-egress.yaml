@@ -20,6 +20,12 @@ spec:
     - name: egress-ip-path
       type: string
       description: The path within the repo to the file containing existing IPs
+    - name: name
+      type: string
+      description: The name to appear on the commit
+    - name: email
+      type: string
+      description: The email to appear on the commit
    
   workspaces:
     - name: source-shared-data
@@ -64,13 +70,14 @@ spec:
         - name: GIT_SCRIPT
           value: |
             git config --global --add safe.directory /workspace/source
-            git config --global user.email "mhill@redhat.com"
-            git config --global user.name "Matthew Hill"
-            git pull
+            git config --global user.email "$(params.email)"
+            git config --global user.name "$(params.name)"
+            git pull origin $(params.target)
+            git checkout $(params.target)
             git status
             git add .
             git commit -m "Add egress IP"
-            git push
+            git push origin $(params.target)
 
       workspaces:
         - name: source
