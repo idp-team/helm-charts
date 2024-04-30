@@ -1,0 +1,18 @@
+---
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: ai-binding
+  namespace: {{ .Values.app.namespace }}
+spec:
+  params:
+    - name: name
+      value: $(extensions.name)
+    - name: category
+      value: $(extensions.category)
+    # - name: git-repo-url
+    #   value: $(body.repository.html_url)
+    # - name: target
+    #   value: $(body.pull_request.head.ref)
+    # - name: description
+    #   value: $(body.pull_request.body)

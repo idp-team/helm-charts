@@ -1,0 +1,41 @@
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  name: run-ai-{{ .Values.app.name }}
+  namespace: {{ .Values.app.namespace }}
+spec:
+  params:
+    - name: ai-url
+      description: The URL of automation insights
+      default: 'www.httpbin.org/post'
+    - name: name
+      description: The name of the process
+    - name: category
+      description: The category of the process
+
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        name: $(uid)
+        labels:
+          backstage.io/kubernetes-id: {{ .Values.app.name }}
+      spec:
+        params:
+          - name: url
+            value: $(tt.params.ai-url)
+          - name: name
+            value: $(tt.params.name)
+          - name: category
+            value: $(tt.params.category)
+          
+        pipelineRef:
+          name: ai-pipeline-{{ .Values.app.name }}
+        serviceAccountName: pipeline
+
+          
+          
+         
+
+          
