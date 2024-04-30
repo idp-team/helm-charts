@@ -26,6 +26,11 @@ spec:
     #       params:
     #         - name: "eventTypes"
     #           value: ["pull_request"]
+    #     - ref:
+    #         name: "cel"
+    #       params:
+    #         - name: "filter"
+    #           value: body.action == 'opened'
       bindings:
         - ref: egress-binding
       template:
