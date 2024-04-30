@@ -17,10 +17,8 @@ spec:
         - ref:
             name: "cel"
           params:
-            # - name: "pr-open-filter"
-            #   value: body.object_attributes.action == 'open'
             - name: "filter"
-              value: body.object_attributes.source_branch.startsWith('devhub/')
+              value: body.object_attributes.source_branch.startsWith('devhub/') && body.object_attributes.action == 'open'
             - name: "overlays"
               value:
                 - key: category
