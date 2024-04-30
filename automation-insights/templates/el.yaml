@@ -7,31 +7,42 @@ metadata:
 spec:
   serviceAccountName: pipeline
   triggers:
-    - name: gitlab-main-listener
+    # - name: gitlab-main-listener
+    #   interceptors:
+    #     - ref:
+    #         name: "gitlab"
+    #       params:
+    #         - name: "eventTypes"
+    #           value: ["Merge Request Hook"]
+    #     - ref:
+    #         name: "cel"
+    #       params:
+    #         - name: "filter"
+    #           value: body.object_attributes.source_branch.startsWith('devhub/') && body.object_attributes.action == 'open'
+    #         - name: "overlays"
+    #           value:
+    #             - key: category
+    #               expression: "body.object_attributes.source_branch.split('/')[1]"
+    #             - key: name
+    #               expression: "body.object_attributes.source_branch.split('/')[2]"
+    - name: github-main-listener
       interceptors:
         - ref:
-            name: "gitlab"
+            name: "github"
           params:
             - name: "eventTypes"
-              value: ["Merge Request Hook"]
+              value: ["pull_request"]
         - ref:
             name: "cel"
           params:
             - name: "filter"
-              value: body.object_attributes.source_branch.startsWith('devhub/') && body.object_attributes.action == 'open'
+              value: body.pull_request.head.ref.startsWith('devhub/') && body.action == 'opened'
             - name: "overlays"
               value:
                 - key: category
-                  expression: "body.object_attributes.source_branch.split('/')[1]"
+                  expression: "body.pull_request.head.ref.split('/')[1]"
                 - key: name
-                  expression: "body.object_attributes.source_branch.split('/')[2]"
-    # - name: github-main-listener
-    #   interceptors:
-    #     - ref:
-    #         name: "github"
-    #       params:
-    #         - name: "eventTypes"
-    #           value: ["pull_request"]
+                  expression: "body.pull_request.head.ref.split('/')[2]"
       bindings:
         - ref: ai-binding
       template:
