@@ -1,0 +1,36 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: ai-pipeline-{{ .Values.app.name }}
+  namespace: {{ .Values.app.namespace }}
+  labels:
+    type: pipeline
+    backstage.io/kubernetes-id: {{ .Values.app.name }}
+spec:
+  params:
+    - name: url
+      type: string
+      description: The Automation Insights endpoint url
+    - name: name
+      type: string
+      description: The name of the process
+    - name: category
+      type: string
+      description: The category of the process
+
+  tasks:
+    - name: automation-insights    # curl the automation insights endpoint
+      taskRef:
+        kind: Task
+        name: curl
+      params:
+        - name: url
+          value: $(params.url)  # automation insights endpoint
+        - name: options
+          value:
+            - "-v"
+            - "-H"
+            - "Content-type: application/json"
+            - "-d"
+            - "{'name': '$(params.name)','category:' '$(params.category)'}"

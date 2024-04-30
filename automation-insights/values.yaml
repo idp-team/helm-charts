@@ -1,0 +1,3 @@
+app:
+  name: my-quarkus-app
+  namespace: rhdh-test

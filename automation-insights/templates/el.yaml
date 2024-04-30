@@ -1,0 +1,41 @@
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: EventListener
+metadata:
+  name: {{ .Values.app.name }}
+  namespace: {{ .Values.app.namespace }}
+spec:
+  serviceAccountName: pipeline
+  triggers:
+    - name: gitlab-main-listener
+      interceptors:
+        - ref:
+            name: "gitlab"
+          params:
+            - name: "eventTypes"
+              value: ["Merge Request Hook"]
+        - ref:
+            name: "cel"
+          params:
+            # - name: "pr-open-filter"
+            #   value: body.object_attributes.action == 'open'
+            - name: "filter"
+              value: body.object_attributes.source_branch.startsWith('devhub/')
+            - name: "overlays"
+              value:
+                - key: category
+                  expression: "body.object_attributes.source_branch.split('/')[1]"
+                - key: name
+                  expression: "body.object_attributes.source_branch.split('/')[2]"
+    # - name: github-main-listener
+    #   interceptors:
+    #     - ref:
+    #         name: "github"
+    #       params:
+    #         - name: "eventTypes"
+    #           value: ["pull_request"]
+      bindings:
+        - ref: ai-binding
+      template:
+        ref: run-ai-{{ .Values.app.name }}
+
