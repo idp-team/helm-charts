@@ -1,0 +1,61 @@
+---
+# name of instance
+name: rhdh-operator
+
+namespace: acasas
+
+operator:
+  channel: fast # double check
+  installPlanApproval: Automatic
+  name: rhdh
+  sourceName: redhat-operators
+  sourceNamespace: openshift-marketplace
+
+secrets:
+  name: secrets-rhdh
+  key: BACKEND_SECRET
+  value: 'Dd+KaZ2d/dPjpk1X6FmRBr6QfMMrj/Ut'
+
+backstage:
+  application:
+    appConfig:
+      configMaps:
+        - name: app-config-rhdh
+      mountPath: /opt/app-root/src
+      dynamicPluginsConfigMapName: dynamic-plugins-rhdh
+      extraEnvs:
+        secrets:
+          - name: secrets-rhdh
+      extraFiles:
+        mountPath: /opt/app-root/src
+      replicas: 1
+      route:
+        enabled: true
+    database:
+      enableLocalDb: true
+
+dynamic: 
+  plugins:
+    - package: './dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-dynamic'
+      disabled: false
+      pluginsConfig: []
+    - package: './dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-org-dynamic'
+      disabled: false
+      pluginsConfig: [] 
+  includes:
+    - dynamic-plugins.default.yaml
+
+custom_app_config:
+  app:
+    title: Red Hat Developer Hub
+  backend:
+    auth:
+      keys:
+        - secret: secrets-rhdh
+    baseUrl: https://backstage-developer-hub-rhdh-operator.apps.cluster-xzlsb.sandbox2284.opentlc.com/
+    cors:
+      origin: https://backstage-developer-hub-rhdh-operator.apps.cluster-xzlsb.sandbox2284.opentlc.com/
+
+
+  
+

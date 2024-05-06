@@ -1,0 +1,10 @@
+apiVersion: rhdh.redhat.com/v1alpha1
+kind: Backstage
+metadata:
+  name: developer-hub
+  namespace: {{ .Values.namespace }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "25"
+spec:
+  {{ tpl (toYaml .Values.backstage) . | nindent 4 }}
