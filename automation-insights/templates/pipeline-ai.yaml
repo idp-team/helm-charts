@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: ai-pipeline-{{ .Values.app.name }}
+  name: pipeline-{{ .Values.app.name }}
   namespace: {{ .Values.app.namespace }}
   labels:
     type: pipeline

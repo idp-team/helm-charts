@@ -2,7 +2,7 @@
 apiVersion: triggers.tekton.dev/v1beta1
 kind: TriggerBinding
 metadata:
-  name: ai-binding
+  name: {{ .Values.app.name }}-binding
   namespace: {{ .Values.app.namespace }}
 spec:
   params:

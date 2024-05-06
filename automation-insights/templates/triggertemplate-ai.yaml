@@ -2,7 +2,7 @@
 apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerTemplate
 metadata:
-  name: run-ai-{{ .Values.app.name }}
+  name: run-{{ .Values.app.name }}
   namespace: {{ .Values.app.namespace }}
 spec:
   params:
