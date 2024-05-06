@@ -1,0 +1,5 @@
+apiVersion: v2
+appVersion: v2.4.11
+description: A Helm chart for customising the deployment of the Red Hat Developer Hub
+name: rhdh-operator
+version: 0.1.0
