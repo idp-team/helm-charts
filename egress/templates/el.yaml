@@ -30,7 +30,7 @@ spec:
     #         name: "cel"
     #       params:
     #         - name: "filter"
-    #           value: body.action == 'opened'
+    #           value: body.pull_request.head.ref.startsWith('devhub/') && body.action == 'opened'
       bindings:
         - ref: egress-binding
       template:
