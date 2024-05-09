@@ -11,14 +11,19 @@ spec:
     provided in the output.
 
   params:
-  - name: OUTPUT
+  - name: description
     description: |
       The string containing the list of files to update.
     type: string
 
-  - name: INPUT
+  - name: existing-ips
     description: |
-      The yaml file containing the list of existing egress ips
+      The paths to the yaml files containing the list of existing egress ips
+    type: string
+
+  - name: ip-ranges
+    description: |
+      The path to the yaml file containing the list of ip ranges
     type: string
 
   workspaces:
@@ -33,16 +38,28 @@ spec:
         #!/usr/libexec/platform-python
 
         import ipaddress
-        import yaml
         import re
+        import ruamel.yaml
+
+        yaml = ruamel.yaml.YAML()
+        yaml.preserve_quotes = True
+
+
+        class quoted_str(str): pass
+
+        def str_presenter(dumper, data):
+            return dumper.represent_scalar('tag:yaml.org,2002:str', data, style="'")
+
+        yaml.representer.add_representer(quoted_str, str_presenter)
+
 
         def load_yaml_file(filename):
             with open(filename, 'r') as file:
-                return yaml.safe_load(file)
+                return yaml.load(file)
 
         def save_yaml_file(data, filename):
             with open(filename, 'w') as file:
-                yaml.safe_dump(data, file)
+                yaml.dump(data, file)
 
         def load_ip_ranges(filename):
             data = load_yaml_file(filename)
@@ -50,7 +67,7 @@ spec:
             for item in data['availableEgress']['ranges']:
                 start_ip = ipaddress.ip_address(item['range']['start'])
                 end_ip = ipaddress.ip_address(item['range']['end'])
-                network = ipaddress.summarize_address_range(start_ip, end_ip)[0]
+                network = ipaddress.summarize_address_range(start_ip, end_ip)
                 ip_ranges[item['name']] = network
             return ip_ranges
 
@@ -71,7 +88,8 @@ spec:
             return network_name in used_ips and str(ip) in used_ips[network_name]
 
         def get_next_available_ip(network, used_ips, network_name):
-            for ip in network.hosts():
+            print(next(network))
+            for ip in next(network):
                 if not is_ip_in_use(ip, used_ips, network_name):
                     return ip
             return None
@@ -89,11 +107,12 @@ spec:
         def update_used_ips(file_data, filename, lob, app, new_ip):
             if lob not in file_data[filename]['allocatedEgress']['ranges']:
                 file_data[filename]['allocatedEgress']['ranges'][lob] = {}
-            file_data[filename]['allocatedEgress']['ranges'][lob][app] = {'backend-connections': str(new_ip)}
+            file_data[filename]['allocatedEgress']['ranges'][lob][app] = {'backend-connections': quoted_str(new_ip)}
+
             save_yaml_file(file_data[filename], filename)
 
         def parse_inputs(input_string):
-            pattern = r"lob:\s*(\w+)\s*cluster:\s*(\w+)\s*app:\s*(\w+)"
+            pattern = r"lob:\s*([\w-]+)\s*cluster:\s*([\w-]+)\s*app:\s*([\w-]+)"
             match = re.search(pattern, input_string, re.IGNORECASE)
             if match:
                 return match.groups()
@@ -102,16 +121,16 @@ spec:
 
         # Example input string
         input_string = """
-          $(params.OUTPUT)
+          $(params.description)
         """
 
         # Parsing inputs
         network_input, filename_input, app_input = parse_inputs(input_string)
-        filename_input = f'used_{filename_input}.yaml'  # Assuming filename follows a specific format
+        filename_input = f'{filename_input}-cluster.yaml'  # Assuming filename follows a specific format
 
         # Load data
-        ip_ranges = load_ip_ranges('ip_ranges.yaml')
-        used_ips, file_data = load_used_ips([f'used_cluster-1.yaml', f'used_cluster-2.yaml'])
+        ip_ranges = load_ip_ranges($(params.ip-ranges))
+        used_ips, file_data = load_used_ips($(params.existing-ips))
 
         # Process
         if network_input and filename_input and app_input:

@@ -18,9 +18,12 @@ spec:
     - name: description
       type: string
       description: The pull request description containing the names of the yaml files to update
-    - name: egress-ip-path
+    - name: egress-ip-paths
       type: string
       description: The path within the repo to the file containing existing IPs
+    - name: ip-ranges
+      type: string
+      description: The path within the repo to the file containing egress ranges
     - name: name
       type: string
       description: The name to appear on the commit
@@ -53,10 +56,12 @@ spec:
       runAfter:
         - git-clone-source
       params:
-        - name: OUTPUT
+        - name: description
           value: $(params.description)
-        - name: INPUT
-          value: $(params.egress-ip-path)
+        - name: existing-ips
+          value: $(params.egress-ip-paths)
+        - name: ip-ranges
+          value: $(params.ip-ranges)
       workspaces:
         - name: output
           workspace: source-shared-data

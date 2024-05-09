@@ -12,9 +12,12 @@ spec:
       description: The application's repo url 
     - name: description
       description: The pull request description containing the names of the yaml files to update
-    - name: egress-ip-path
+    - name: egress-ip-paths
       description: The path within the repo to the file containing existing IPs
-      default: 'test.yaml'
+      default: "['test-cluster.yaml', 'prod-cluster.yaml']"
+    - name: ip-ranges
+      description: The path within the repo to the file containing IP ranges
+      default: 'ranges.yaml'
     - name: name
       description: The name that will appear on the git commit
       default: 'Matthew Hill'
@@ -37,8 +40,10 @@ spec:
             value: $(tt.params.git-repo-url)
           - name: description
             value: $(tt.params.description)
-          - name: egress-ip-path
-            value: $(tt.params.egress-ip-path)
+          - name: egress-ip-paths
+            value: $(tt.params.egress-ip-paths)
+          - name: ip-ranges
+            value: $(tt.params.ip-ranges)
           - name: name
             value: $(tt.params.name)
           - name: email
