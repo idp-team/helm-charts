@@ -65,14 +65,15 @@ spec:
             with open(filename, 'w') as file:
                 yaml.dump(data, file)
 
-        def load_ip_ranges(filename):
-            data = load_yaml_file(filename)
+        def load_ip_ranges(filenames):
             ip_ranges = {}
-            for item in data['availableEgress']['ranges']:
-                start_ip = ipaddress.ip_address(item['range']['start'])
-                end_ip = ipaddress.ip_address(item['range']['end'])
-                network = ipaddress.summarize_address_range(start_ip, end_ip)
-                ip_ranges[item['name']] = network
+            for filename in filenames:
+                data = load_yaml_file(filename)
+                for item in data['availableEgress']['ranges']:
+                    start_ip = ipaddress.ip_address(item['range']['start'])
+                    end_ip = ipaddress.ip_address(item['range']['end'])
+                    network = ipaddress.summarize_address_range(start_ip, end_ip)
+                    ip_ranges[item['name']] = network
             return ip_ranges
 
         def load_used_ips(filenames):
@@ -134,7 +135,7 @@ spec:
         filename_input = f'{filename_input}-cluster.yaml'  # Assuming filename follows a specific format
 
         # Load data
-        ip_ranges = load_ip_ranges("$(params.ip-ranges)")
+        ip_ranges = load_ip_ranges($(params.ip-ranges))
         used_ips, file_data = load_used_ips($(params.existing-ips))
 
         # Process

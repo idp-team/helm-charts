@@ -17,7 +17,7 @@ spec:
       default: "['test-cluster.yaml', 'prod-cluster.yaml']"
     - name: ip-ranges
       description: The path within the repo to the file containing IP ranges
-      default: 'ranges.yaml'
+      default: "['ranges.yaml', 'ranges2.yaml']"
     - name: name
       description: The name that will appear on the git commit
       default: 'Matthew Hill'
