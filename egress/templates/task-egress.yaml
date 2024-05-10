@@ -93,10 +93,10 @@ spec:
             return network_name in used_ips and str(ip) in used_ips[network_name]
 
         def get_next_available_ip(network, used_ips, network_name):
-            print(next(network))
-            for ip in next(network):
-                if not is_ip_in_use(ip, used_ips, network_name):
-                    return ip
+            for cidr in network:
+                for ip in cidr:
+                    if not is_ip_in_use(ip, used_ips, network_name):
+                        return ip
             return None
 
         def find_available_ip(network_name, ip_ranges, used_ips):
